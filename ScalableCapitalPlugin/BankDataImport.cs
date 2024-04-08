@@ -38,8 +38,7 @@ namespace ScalableCapitalPlugin
                 using var reader = new StreamReader(_path);
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-                csv.ValidateHeader<ScalableCapitalCsvRecords>();
-              
+                csv.ValidateHeader<ScalableCapitalCsvRecords>();     
             }
             catch
             {

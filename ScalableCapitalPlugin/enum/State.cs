@@ -2,11 +2,10 @@
 {
     public enum State
     {
-        Canselled,
+        Cancelled,
         Executed,
         Expired,
         Pending,
         Rejected,
     }
-
 }
