@@ -1,12 +1,28 @@
 ﻿namespace BankDataImportBase
 {
-    public interface IBankDataImport
+    public abstract class BankDataImport
     {
-        public string  Name { get; }
-        public string[] SupportedFormats { get; }
+        public required string  Name { get; init; }
+        public required string[] SupportedFormats { get; init; }
 
-        public bool SetAndCheckPath(string path);
-        public bool IsValid();
-        public IAsyncEnumerable<InternalBankDataFormat> GetBankData(CancellationToken token = default);
+        public required Version RequiredVersion { get; init; }
+
+        protected string? _path;
+
+        public virtual bool SetAndCheckPath(string path)
+        {
+            if (!File.Exists(path))
+                return false;
+
+            if (!SupportedFormats.Contains(Path.GetExtension(path).ToUpper()))
+                return false;
+
+            _path = path;
+
+            return true;
+        }
+
+        public abstract bool IsValid();
+        public abstract IAsyncEnumerable<InternalBankDataRecord> GetBankData(CancellationToken token = default);
     }
 }

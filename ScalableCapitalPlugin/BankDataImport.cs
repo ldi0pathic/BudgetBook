@@ -1,36 +1,24 @@
 ﻿using BankDataImportBase;
 using CsvHelper;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using CsvHelper.Configuration;
 using ScalableCapitalPlugin.model;
 using ScalableCapitalPlugin.mapper;
 
+
 namespace ScalableCapitalPlugin
 {
-    public class BankDataImport : IBankDataImport
+    public class ScalableCapitalBankDataImport : BankDataImport
     {
-        private string? _path;
-       
-        public string Name => "ScalableCapital";
-        public string[] SupportedFormats => [".CSV"];
-
-        public bool SetAndCheckPath(string path)
+        ScalableCapitalBankDataImport()
         {
-            if(!File.Exists(path)) 
-                return false;
-
-            if(!SupportedFormats.Contains(Path.GetExtension(path).ToUpper()))
-                return false;
-
-            _path = path;
-
-            return true;
+            Name = "ScalableCapital";
+            SupportedFormats = [".CSV"];
         }
 
-        public bool IsValid()
+        public override bool IsValid()
         {
-            if(_path is null)
+            if (_path is null)
                 return false;
 
             try
@@ -38,7 +26,7 @@ namespace ScalableCapitalPlugin
                 using var reader = new StreamReader(_path);
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-                csv.ValidateHeader<ScalableCapitalCsvRecords>();     
+                csv.ValidateHeader<ScalableCapitalCsvRecord>();
             }
             catch
             {
@@ -48,21 +36,21 @@ namespace ScalableCapitalPlugin
             return true;
         }
 
-        public async IAsyncEnumerable<InternalBankDataFormat> GetBankData([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<InternalBankDataRecord> GetBankData(CancellationToken cancellationToken = default)
         {
             if (_path is null)
-               throw new ArgumentNullException(nameof(_path));
+                throw new ArgumentNullException(nameof(_path));
 
             using (var reader = new StreamReader(_path))
             using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = ";", InjectionCharacters = ['=', '@', '+', '-', '\t', '\r', '\"'] }))
             {
                 csv.Context.RegisterClassMap<ScalableCapitalCsvRecordsMapper>();
-                var records = csv.GetRecordsAsync<ScalableCapitalCsvRecords>(cancellationToken).GetAsyncEnumerator(cancellationToken);
+                var records = csv.GetRecordsAsync<ScalableCapitalCsvRecord>(cancellationToken).GetAsyncEnumerator(cancellationToken);
 
                 while (await records.MoveNextAsync().ConfigureAwait(false))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    yield return (InternalBankDataFormat)records.Current;
+                    yield return (InternalBankDataRecord)records.Current;
                 }
             }
         }

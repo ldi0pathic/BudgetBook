@@ -6,7 +6,7 @@ using ScalableCapitalPlugin.model;
 
 namespace ScalableCapitalPlugin.mapper
 {
-    public class ScalableCapitalCsvRecordsMapper : ClassMap<ScalableCapitalCsvRecords>
+    public class ScalableCapitalCsvRecordsMapper : ClassMap<ScalableCapitalCsvRecord>
     {
         public ScalableCapitalCsvRecordsMapper()
         {

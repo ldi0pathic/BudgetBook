@@ -4,7 +4,7 @@
              x:Class="FInanzbuch.MainPage">
 
     <ScrollView>
-        <VerticalStackLayout
+        <HorizontalStackLayout
             Padding="30,0"
             Spacing="25">
             <Image
@@ -30,7 +30,7 @@
                 SemanticProperties.Hint="Counts the number of times you click"
                 Clicked="OnCounterClicked"
                 HorizontalOptions="Fill" />
-        </VerticalStackLayout>
+        </HorizontalStackLayout>
     </ScrollView>
 
 </ContentPage>

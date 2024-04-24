@@ -33,7 +33,7 @@ namespace ScalableCapitalPluginTest
             {
                 int index = 0;
                 csv.Context.RegisterClassMap<ScalableCapitalCsvRecordsMapper>();
-                var records = csv.GetRecords<ScalableCapitalCsvRecords>().ToList();
+                var records = csv.GetRecords<ScalableCapitalCsvRecord>().ToList();
 
                 Assert.Equal(4, records.Count);
 
