@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BankDataImportBase\BankDataImportBase.csproj" />
+    <ProjectReference Include="..\..\BugetBook.Business\BankDataImportBase\BankDataImportBase.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ScalableCapitalPlugin\ScalableCapitalPlugin.csproj" />
+    <ProjectReference Include="..\..\BugetBook.Plugins\ScalableCapitalPlugin\ScalableCapitalPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>

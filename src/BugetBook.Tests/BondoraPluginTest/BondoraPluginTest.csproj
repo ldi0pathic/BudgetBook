@@ -21,13 +21,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BondoraPlugin\BondoraPlugin.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="testdata\test_new.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BugetBook.Plugins\BondoraPlugin\BondoraPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>
