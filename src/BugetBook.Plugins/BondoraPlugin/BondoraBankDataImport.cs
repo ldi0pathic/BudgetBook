@@ -45,7 +45,7 @@ namespace BondoraPlugin
                             {
                                 Date = hasDate ? date : DateTime.MinValue,
                                 Type = row.ItemArray[1].ToString().ToDataType(),
-                                Amount = decimal.Parse(row.ItemArray[2].ToString()),
+                                Amount = decimal.Parse(row.ItemArray[2].ToString().Replace('.',',')),
                                 Description = row.ItemArray[1].ToString(),
                             };
 
