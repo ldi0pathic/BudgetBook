@@ -4,13 +4,15 @@ using System.Globalization;
 using CsvHelper.Configuration;
 using ScalableCapitalPlugin.model;
 using ScalableCapitalPlugin.mapper;
+using System.Diagnostics.CodeAnalysis;
 
 
 namespace ScalableCapitalPlugin
 {
     public class ScalableCapitalBankDataImport : BankDataImport
     {
-        ScalableCapitalBankDataImport()
+        [SetsRequiredMembers]
+        public ScalableCapitalBankDataImport()
         {
             Name = "ScalableCapital";
             SupportedFormats = [".CSV"];

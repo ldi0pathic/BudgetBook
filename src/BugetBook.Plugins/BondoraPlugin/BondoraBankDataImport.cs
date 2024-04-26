@@ -3,6 +3,7 @@ using BondoraPlugin.mapper;
 using BondoraPlugin.model;
 using ExcelDataReader;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 
@@ -12,7 +13,8 @@ namespace BondoraPlugin
     {
         private readonly string[] rowOfInterrest;
 
-        BondoraBankDataImport()
+        [SetsRequiredMembers]
+        public BondoraBankDataImport()
         {
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             Name = "Bondaora";
@@ -38,9 +40,10 @@ namespace BondoraPlugin
                         cancellationToken.ThrowIfCancellationRequested();
                         if (rowOfInterrest.Contains((row.ItemArray[1] ?? "").ToString().ToUpper()))
                         {
+                            var hasDate = DateTime.TryParse(row.ItemArray[0].ToString(), out DateTime date);
                             var data = new BondoraXslRecord
                             {
-                                Date = DateTime.Parse(row.ItemArray[0].ToString()),
+                                Date = hasDate ? date : DateTime.MinValue,
                                 Type = row.ItemArray[1].ToString().ToDataType(),
                                 Amount = decimal.Parse(row.ItemArray[2].ToString()),
                                 Description = row.ItemArray[1].ToString(),

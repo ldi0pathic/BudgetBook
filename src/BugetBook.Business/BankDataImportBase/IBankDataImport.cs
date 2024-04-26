@@ -5,8 +5,6 @@
         public required string  Name { get; init; }
         public required string[] SupportedFormats { get; init; }
 
-        public required Version RequiredVersion { get; init; }
-
         protected string? _path;
 
         public virtual bool SetAndCheckPath(string path)

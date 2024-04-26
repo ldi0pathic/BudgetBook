@@ -1,9 +1,9 @@
-using ExcelDataReader;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
-using Xunit.Abstractions;
+using BondoraPlugin;
 using BondoraPlugin.mapper;
 using BondoraPlugin.model;
+using ExcelDataReader;
+using System.Data;
+using Xunit.Abstractions;
 
 
 namespace BondoraPluginTest
@@ -20,34 +20,21 @@ namespace BondoraPluginTest
 
         [Theory]
         [InlineData(".\\testdata\\test_new.xlsx")]
-        public void Test1(string path)
+        public void TestPlugin(string path)
         {
-            string[] rowOfInterrest = ["Go & Grow Zinsen".ToUpper(), "SEPA-Banküberweisung".ToUpper(), "Überweisen".ToUpper()];
+            var plugin = new BondoraBankDataImport();
 
-            using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))  
-            using (var reader = ExcelReaderFactory.CreateReader(stream))
-            {
-                var tables = reader.AsDataSet().Tables;
-                reader.Close();
+            Assert.True(plugin.SetAndCheckPath(path));
+            Assert.True(plugin.IsValid());
 
-                foreach (DataTable table in tables)
-                {
-                    foreach(DataRow row in table.Rows)
-                    {
-                        if (rowOfInterrest.Contains(row.ItemArray[1]?.ToString().ToUpper()))
-                        {
-                            var data = new BondoraXslRecord
-                            {
-                                Date = DateTime.Parse(row.ItemArray[0].ToString()),
-                                Type = row.ItemArray[1].ToString().ToDataType(),
-                                Amount = decimal.Parse(row.ItemArray[2].ToString().Replace('.',',')),
-                            };
-                            var _ = data;
-                            _log.WriteLine(data.ToString());
-                        }
-                    }
-                }
-            }    
+            var data = plugin.GetBankData().ToBlockingEnumerable().ToList();
+
+            Assert.NotEmpty(data);
+            Assert.Equal(16, data.Count);
+            Assert.Equal(1,data.Count(s => s.Type.Equals(BankDataImportBase.DataType.SavingPlan)));
+            Assert.Equal(15,data.Count(s => s.Type.Equals(BankDataImportBase.DataType.Interest)));
+
+            //todo
         }
     }
 }
