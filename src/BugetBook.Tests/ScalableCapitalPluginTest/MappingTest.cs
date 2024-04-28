@@ -1,10 +1,4 @@
-using System.Globalization;
-using System.Text;
-using CsvHelper;
-using CsvHelper.Configuration;
-using ScalableCapitalPlugin.enums;
-using ScalableCapitalPlugin.mapper;
-using ScalableCapitalPlugin.model;
+using ScalableCapitalPlugin;
 using Xunit.Abstractions;
 
 namespace ScalableCapitalPluginTest
@@ -18,89 +12,71 @@ namespace ScalableCapitalPluginTest
             _log = testOutputHelper;
         }
 
-        [Fact]
-        public void Test()
+        [Theory]
+        [InlineData(".\\testdata\\test.csv")]
+        public void TestPlugin(string path)
         {
-            var s = new StringBuilder();
-            s.AppendLine("date;time;status;reference;description;assetType;type;isin;shares;price;amount;fee;tax;currency");  
-            s.AppendLine("2023-12-28;11:26:51;Pending;\"GZHGJNJKLU\";\"CTEST\";Security;Sell;ZH9097;0;0,00;0,00;0,00;0,00;EUR");
-            s.AppendLine("2024-04-05;02:00:00;Executed;\"fwefew 26511873\";\"AAA\";Cash;Distribution;GH89857989;;;41,57;0,00;;EUR");
-            s.AppendLine("1990-04-04;19:57:34;Cancelled;\"NHkchbk89\";\"Bsl Post\";Security;Sell;Ge7890ß9;0;0,00;0,00;0,00;0,00;EUR");
-            s.AppendLine("2024-03-28;01:00:00;Executed;\"jifewfew\";\"Entgelt Gebühren\";Cash;Fee;;;;-4,99;0,00;;EUR");
+            var plugin = new ScalableCapitalBankDataImport();
 
-            using (var reader = new StringReader(s.ToString()))
-            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = ";", InjectionCharacters = ['=', '@', '+', '-', '\t', '\r', '\"'] }))
-            {
-                int index = 0;
-                csv.Context.RegisterClassMap<ScalableCapitalCsvRecordsMapper>();
-                var records = csv.GetRecords<ScalableCapitalCsvRecord>().ToList();
+            Assert.True(plugin.SetAndCheckPath(path));
+            Assert.True(plugin.IsValid());
 
-                Assert.Equal(4, records.Count);
+            var data = plugin.GetBankData().ToBlockingEnumerable().ToList();
 
-                //"2023-12-28;11:26:51;Pending;\"GZHGJNJKLU\";\"CTEST\";Security;Sell;ZH9097;0;0,00;0,00;0,00;0,00;EUR"
-                index = 0;
-                Assert.Equal(new DateTime(2023, 12, 28, 11, 26, 51), records[index].DateTime);
-                Assert.Equal(State.Pending, records[index].Status);
-                Assert.Equal("GZHGJNJKLU", records[index].Reference);
-                Assert.Equal("CTEST", records[index].Description);
-                Assert.Equal(AssetType.Security, records[index].AssetType);
-                Assert.Equal(DataType.Sell, records[index].Type);
-                Assert.Equal("ZH9097", records[index].Isin);
-                Assert.Equal(0, records[index].Shares);
-                Assert.Equal(0, records[index].Price);
-                Assert.Equal(0, records[index].Amount);
-                Assert.Equal(0, records[index].Fee);
-                Assert.Equal(0, records[index].Tax);
-                Assert.Equal(Currency.EUR, records[index].Currency);
+            Assert.Equal(4, data.Count);
+            Assert.Equal((decimal)36.58, data.Sum(s => s.Amount));
 
-                //"2024-04-05;02:00:00;Executed;\"fwefew 26511873\";\"AAA\";Cash;Distribution;GH89857989;;;41,57;0,00;;EUR"
-                index = 1;
-                Assert.Equal(new DateTime(2024, 04, 05, 02, 0, 0), records[index].DateTime);
-                Assert.Equal(State.Executed, records[index].Status);
-                Assert.Equal("fwefew 26511873", records[index].Reference);
-                Assert.Equal("AAA", records[index].Description);
-                Assert.Equal(AssetType.Cash, records[index].AssetType);
-                Assert.Equal(DataType.Distribution, records[index].Type);
-                Assert.Equal("GH89857989", records[index].Isin);
-                Assert.Equal(0, records[index].Shares);
-                Assert.Equal(0, records[index].Price);
-                Assert.Equal((decimal)41.57, records[index].Amount);
-                Assert.Equal(0, records[index].Fee);
-                Assert.Equal(0, records[index].Tax);
-                Assert.Equal(Currency.EUR, records[index].Currency);
+            var data1 = data.Where(w => w.DateTime.Equals(new DateTime(2023, 12, 28, 11, 26, 51))).Single();
 
-                //"1990-04-04;19:57:34;Cancelled;\"NHkchbk89\";\"Bsl Post\";Security;Sell;Ge7890ß9;0;0,00;0,00;0,00;0,00;EUR"
-                index = 2;
-                Assert.Equal(new DateTime(1990, 04, 04, 19, 57, 34), records[index].DateTime);
-                Assert.Equal(State.Cancelled, records[index].Status);
-                Assert.Equal("NHkchbk89", records[index].Reference);
-                Assert.Equal("Bsl Post", records[index].Description);
-                Assert.Equal(AssetType.Security, records[index].AssetType);
-                Assert.Equal(DataType.Sell, records[index].Type);
-                Assert.Equal("Ge7890ß9", records[index].Isin);
-                Assert.Equal(0, records[index].Shares);
-                Assert.Equal(0, records[index].Price);
-                Assert.Equal(0, records[index].Amount);
-                Assert.Equal(0, records[index].Fee);
-                Assert.Equal(0, records[index].Tax);
-                Assert.Equal(Currency.EUR, records[index].Currency);
+            Assert.NotNull(data1);
+            Assert.Equal(new DateTime(2023, 12, 28, 11, 26, 51), data1.DateTime);
+            Assert.Equal("GZHGJNJKLU", data1.Reference);
+            Assert.Equal("ZH9097 | CTEST | x1", data1.Description);
+            Assert.Equal(BankDataImportBase.DataType.Sell, data1.Type);
+            Assert.Equal(0, data1.Price);
+            Assert.Equal(0, data1.Amount);
+            Assert.Equal(0, data1.Fee);
+            Assert.Equal(0, data1.Tax);
+            Assert.Equal(BankDataImportBase.Currency.EUR, data1.Currency);
 
-                //"2024-03-28;01:00:00;Executed;\"jifewfew\";\"Entgelt Gebühren\";Cash;Fee;;;;-4,99;0,00;;EUR"
-                index = 3;
-                Assert.Equal(new DateTime(2024, 03, 28, 01, 00, 00), records[index].DateTime);
-                Assert.Equal(State.Executed, records[index].Status);
-                Assert.Equal("jifewfew", records[index].Reference);
-                Assert.Equal("Entgelt Gebühren", records[index].Description);
-                Assert.Equal(AssetType.Cash, records[index].AssetType);
-                Assert.Equal(DataType.Fee, records[index].Type);
-                Assert.Equal("", records[index].Isin);
-                Assert.Equal(0, records[index].Shares);
-                Assert.Equal(0, records[index].Price);
-                Assert.Equal((decimal)-4.99, records[index].Amount);
-                Assert.Equal(0, records[index].Fee);
-                Assert.Equal(0, records[index].Tax);
-                Assert.Equal(Currency.EUR, records[index].Currency);
-            }
-        }    
+            var data2 = data.Where(w => w.DateTime.Equals(new DateTime(2024, 04, 05, 02, 0, 0))).Single();
+
+            Assert.NotNull(data2);
+            Assert.Equal(new DateTime(2024, 04, 05, 02, 0, 0), data2.DateTime);
+            Assert.Equal("fwefew 26511873", data2.Reference);
+            Assert.Equal("GH89857989 | AAA | x0", data2.Description);
+            Assert.Equal(BankDataImportBase.DataType.Distribution, data2.Type);
+            Assert.Equal(0, data2.Price);
+            Assert.Equal((decimal)41.57, data2.Amount);
+            Assert.Equal(0, data2.Fee);
+            Assert.Equal(0, data2.Tax);
+            Assert.Equal(BankDataImportBase.Currency.EUR, data2.Currency);
+
+            var data3 = data.Where(w => w.DateTime.Equals(new DateTime(1990, 04, 04, 19, 57, 34))).Single();
+
+            Assert.NotNull(data3);
+            Assert.Equal(new DateTime(1990, 04, 04, 19, 57, 34), data3.DateTime);
+            Assert.Equal("NHkchbk89", data3.Reference);
+            Assert.Equal("Ge7890H9 | Bsl Post | x0", data3.Description);
+            Assert.Equal(BankDataImportBase.DataType.Sell, data3.Type);
+            Assert.Equal((decimal)2, data3.Price);
+            Assert.Equal(0, data3.Amount);
+            Assert.Equal(0, data3.Fee);
+            Assert.Equal(0, data3.Tax);
+            Assert.Equal(BankDataImportBase.Currency.EUR, data3.Currency);
+
+            var data4 = data.Where(w => w.DateTime.Equals(new DateTime(2024, 03, 28, 01, 00, 00))).Single();
+
+            Assert.NotNull(data4);
+            Assert.Equal(new DateTime(2024, 03, 28, 01, 00, 00), data4.DateTime);
+            Assert.Equal("jifewfew", data4.Reference);
+            Assert.Equal(" | Entgelt Gebühren | x0", data4.Description);
+            Assert.Equal(BankDataImportBase.DataType.Fee, data4.Type);
+            Assert.Equal(0, data4.Price);
+            Assert.Equal((decimal)-4.99, data4.Amount);
+            Assert.Equal(0, data4.Fee);
+            Assert.Equal(0, data4.Tax);
+            Assert.Equal(BankDataImportBase.Currency.EUR, data4.Currency);
+        }
     }
 }

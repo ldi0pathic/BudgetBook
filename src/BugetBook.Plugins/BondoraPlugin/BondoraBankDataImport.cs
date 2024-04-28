@@ -4,8 +4,6 @@ using BondoraPlugin.model;
 using ExcelDataReader;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
 
 namespace BondoraPlugin
 {
@@ -21,7 +19,7 @@ namespace BondoraPlugin
             SupportedFormats = [".XLSX"];
             rowOfInterrest = ["Go & Grow Zinsen".ToUpper(), "SEPA-Banküberweisung".ToUpper(), "Überweisen".ToUpper()];
         }
-       
+
         public override async IAsyncEnumerable<InternalBankDataRecord> GetBankData(CancellationToken cancellationToken = default)
         {
             if (_path is null)
@@ -45,7 +43,7 @@ namespace BondoraPlugin
                             {
                                 Date = hasDate ? date : DateTime.MinValue,
                                 Type = row.ItemArray[1].ToString().ToDataType(),
-                                Amount = decimal.Parse(row.ItemArray[2].ToString().Replace('.',',')),
+                                Amount = decimal.Parse(row.ItemArray[2].ToString().Replace('.', ',')),
                                 Description = row.ItemArray[1].ToString(),
                             };
 
@@ -59,6 +57,8 @@ namespace BondoraPlugin
 
         public override bool IsValid()
         {
+            if (_path is null)
+                return false;
             //todo
             return true;
         }

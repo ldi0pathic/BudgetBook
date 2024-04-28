@@ -15,16 +15,16 @@ namespace BondoraPlugin.model
 
             BankDataImportBase.DataType dataType = data.Type switch
             {
-                DataType.Buy => BankDataImportBase.DataType.Buy,  
+                DataType.Buy => BankDataImportBase.DataType.Buy,
                 DataType.Interest => BankDataImportBase.DataType.Interest,
-                DataType.SavingPlan => BankDataImportBase.DataType.SavingPlan,    
+                DataType.SavingPlan => BankDataImportBase.DataType.SavingPlan,
             };
 
             return new InternalBankDataRecord
             {
                 Type = dataType,
                 Currency = Currency.EUR,
-                DateTime = data.Date, 
+                DateTime = data.Date,
                 Description = data.Description,
                 Amount = data.Amount,
             };

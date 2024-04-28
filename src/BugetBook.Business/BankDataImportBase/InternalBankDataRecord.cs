@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace BankDataImportBase
+﻿namespace BankDataImportBase
 {
     public record InternalBankDataRecord
     {

@@ -2,7 +2,7 @@
 {
     public abstract class BankDataImport
     {
-        public required string  Name { get; init; }
+        public required string Name { get; init; }
         public required string[] SupportedFormats { get; init; }
 
         protected string? _path;

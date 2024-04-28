@@ -1,7 +1,4 @@
 using BondoraPlugin;
-using BondoraPlugin.mapper;
-using BondoraPlugin.model;
-using ExcelDataReader;
 using System.Data;
 using Xunit.Abstractions;
 
@@ -31,8 +28,8 @@ namespace BondoraPluginTest
 
             Assert.NotEmpty(data);
             Assert.Equal(16, data.Count);
-            Assert.Equal(1,data.Count(s => s.Type.Equals(BankDataImportBase.DataType.SavingPlan)));
-            Assert.Equal(15,data.Count(s => s.Type.Equals(BankDataImportBase.DataType.Interest)));
+            Assert.Equal(1, data.Count(s => s.Type.Equals(BankDataImportBase.DataType.SavingPlan)));
+            Assert.Equal(15, data.Count(s => s.Type.Equals(BankDataImportBase.DataType.Interest)));
             Assert.Equal((decimal)117.85, data.Sum(s => s.Amount));
 
 
@@ -50,8 +47,8 @@ namespace BondoraPluginTest
             Assert.Equal(BankDataImportBase.DataType.Interest, data1.Type);
             Assert.Equal(BankDataImportBase.Currency.EUR, data1.Currency);
             Assert.Equal("Go & Grow Zinsen", data1.Description);
-            Assert.Equal((decimal)1.18, data1.Amount);  
-            
+            Assert.Equal((decimal)1.18, data1.Amount);
+
             var data2 = data.Where(w => w.DateTime.Equals(new DateTime(2024, 01, 01))).Single();
 
             Assert.NotNull(data2);

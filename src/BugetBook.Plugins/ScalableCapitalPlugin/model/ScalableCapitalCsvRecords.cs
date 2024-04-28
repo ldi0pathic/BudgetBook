@@ -1,16 +1,13 @@
 ﻿using BankDataImportBase;
-using CsvHelper.Configuration.Attributes;
 using ScalableCapitalPlugin.enums;
 using Currency = ScalableCapitalPlugin.enums.Currency;
 using DataType = ScalableCapitalPlugin.enums.DataType;
-
 
 namespace ScalableCapitalPlugin.model
 {
     public record ScalableCapitalCsvRecord
     {
-        public DateOnly Date { get; set; }
-        public TimeOnly Time { get; set; }
+        public DateTime DateTime { get; set; }
         public State Status { get; set; }
         public string Reference { get; set; }
         public string? Description { get; set; }
@@ -23,9 +20,6 @@ namespace ScalableCapitalPlugin.model
         public decimal? Fee { get; set; }
         public decimal? Tax { get; set; }
         public Currency Currency { get; set; }
-
-        [Ignore]
-        public DateTime DateTime => new(Date.Year, Date.Month, Date.Day, Time.Hour, Time.Minute, Time.Second);
 
         public static explicit operator InternalBankDataRecord(ScalableCapitalCsvRecord data)
         {
@@ -51,10 +45,10 @@ namespace ScalableCapitalPlugin.model
             return new InternalBankDataRecord
             {
                 Type = dataType,
-                Currency = currency,    
+                Currency = currency,
                 DateTime = data.DateTime,
                 Reference = data.Reference,
-                Description = data.Description,
+                Description = $"{data.Isin} | {data.Description} | x{data.Shares}",
                 Price = data.Price,
                 Amount = data.Amount,
                 Fee = data.Fee,

@@ -1,6 +1,4 @@
 ﻿using BondoraPlugin.enums;
-using System.Linq;
-using System.Xml.XPath;
 
 namespace BondoraPlugin.mapper
 {
