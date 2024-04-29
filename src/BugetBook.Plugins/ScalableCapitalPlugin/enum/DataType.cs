@@ -11,6 +11,6 @@
         SavingPlan,
         SecurityTransfer,
         Sell,
-        Taxes
+        Taxes,
     }
 }

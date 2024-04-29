@@ -18,8 +18,7 @@ namespace ScalableCapitalPluginTest
         {
             var plugin = new ScalableCapitalBankDataImport();
 
-            Assert.True(plugin.SetAndCheckPath(path));
-            Assert.True(plugin.IsValid());
+            Assert.True(plugin.SetAndCheck(path));
 
             var data = plugin.GetBankData().ToBlockingEnumerable().ToList();
 

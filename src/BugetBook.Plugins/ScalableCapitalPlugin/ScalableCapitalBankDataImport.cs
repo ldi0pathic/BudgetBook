@@ -15,12 +15,15 @@ namespace ScalableCapitalPlugin
 {
     public class ScalableCapitalBankDataImport : BankDataImport
     {
+        private bool _isValid;
+
         [SetsRequiredMembers]
         public ScalableCapitalBankDataImport()
         {
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             Name = "ScalableCapital";
             SupportedFormats = [".CSV"];
+            _isValid = false;
         }
 
         public override async IAsyncEnumerable<InternalBankDataRecord> GetBankData(CancellationToken cancellationToken = default)
@@ -35,57 +38,39 @@ namespace ScalableCapitalPlugin
                 reader.Close();
 
                 bool first = true;
-                foreach (DataTable table in tables)
+                foreach (DataRow row in tables[0].Rows)
                 {
-                    foreach (DataRow row in table.Rows)
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (first)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        if (first)
-                        {
-                            first = false;
-                            if (CheckHeaderRow(row))
-                                continue;
-
-                            throw new BankDataException("Ungültiger CSV Header");
-                        }
-
-                        var hasDate = DateTime.TryParseExact(row.ItemArray[0].ToString(), "yyyy-MM-dd", null, DateTimeStyles.None, out DateTime date);//2023-12-28
-                        if (hasDate)
-                        {
-                            hasDate = DateTime.TryParseExact(row.ItemArray[1].ToString(), "HH:mm:ss", null, DateTimeStyles.None, out DateTime time);
-                            date = date.AddHours(time.Hour);
-                            date = date.AddMinutes(time.Minute);
-                            date = date.AddSeconds(time.Second);
-                        }
-                        var hasShares = int.TryParse(row.ItemArray[8].ToString(), out int shares);
-                        var hasPrice = decimal.TryParse(row.ItemArray[9].ToString(), out decimal price);
-                        var hasAmount = decimal.TryParse(row.ItemArray[10].ToString(), out decimal amount);
-                        var hasFee = decimal.TryParse(row.ItemArray[11].ToString(), out decimal fee);
-                        var hasTax = decimal.TryParse(row.ItemArray[12].ToString(), out decimal tax);
-                        var data = new ScalableCapitalCsvRecord
-                        {
-                            DateTime = hasDate ? date : DateTime.MinValue,
-                            Status = (State)Enum.Parse(typeof(State), row.ItemArray[2].ToString()),
-                            Reference = row.ItemArray[3].ToString().Replace("\\\"", ""),
-                            Description = row.ItemArray[4].ToString().Replace("\\\"", ""),
-                            AssetType = (AssetType)Enum.Parse(typeof(AssetType), row.ItemArray[5].ToString()),
-                            Type = (DataType)Enum.Parse(typeof(DataType), row.ItemArray[6].ToString()),
-                            Isin = row.ItemArray[7].ToString().Replace("\\\"", ""),
-                            Shares = hasShares ? shares : 0,
-                            Price = hasPrice ? price : 0,
-                            Amount = hasAmount ? amount : 0,
-                            Fee = hasFee ? fee : 0,
-                            Tax = hasTax ? tax : 0,
-                            Currency = (Currency)Enum.Parse(typeof(Currency), row.ItemArray[13].ToString()),
-                        };
-
-                        yield return (InternalBankDataRecord)data;
+                        first = false;
+                        continue;
                     }
+
+                    var data = new ScalableCapitalCsvRecord
+                    {
+                        DateTime = $"{row.ItemArray[0]} {row.ItemArray[1]}".ParseOrDefault(DateTime.MinValue),
+                        Status = row.ItemArray[2].Parse<State>(),
+                        Reference = row.ItemArray[3].Replace("\\\""),
+                        Description = row.ItemArray[4].Replace("\\\""),
+                        AssetType = row.ItemArray[5].Parse<AssetType>(),
+                        Type = row.ItemArray[6].Parse<DataType>(),
+                        Isin = row.ItemArray[7].Replace("\\\""),
+                        Shares = row.ItemArray[8].ParseOrDefault(0),
+                        Price = row.ItemArray[9].ParseOrDefault(0m),
+                        Amount = row.ItemArray[10].ParseOrDefault(0m),
+                        Fee = row.ItemArray[11].ParseOrDefault(0m),
+                        Tax = row.ItemArray[12].ParseOrDefault(0m),
+                        Currency = row.ItemArray[13].Parse<Currency>(),
+                    };
+
+                    yield return (InternalBankDataRecord)data;
                 }
             }
         }
 
-        public override bool IsValid()
+        protected override bool IsValid()
         {
             if (_path is null)
                 return false;
@@ -95,7 +80,8 @@ namespace ScalableCapitalPlugin
             {
                 var tables = reader.AsDataSet().Tables;
                 reader.Close();
-                return CheckHeaderRow(tables[0].Rows[0]);
+                _isValid = CheckHeaderRow(tables[0].Rows[0]);
+                return _isValid;
             }
         }
 

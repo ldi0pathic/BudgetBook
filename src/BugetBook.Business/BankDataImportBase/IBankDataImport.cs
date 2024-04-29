@@ -2,12 +2,12 @@
 {
     public abstract class BankDataImport
     {
-        public required string Name { get; init; }
-        public required string[] SupportedFormats { get; init; }
+        public string Name { get; init; }
+        public string[] SupportedFormats { get; init; }
 
         protected string? _path;
 
-        public virtual bool SetAndCheckPath(string path)
+        public virtual bool SetAndCheck(string path)
         {
             if (!File.Exists(path))
                 return false;
@@ -17,10 +17,11 @@
 
             _path = path;
 
-            return true;
+            return IsValid();
         }
 
-        public abstract bool IsValid();
+        protected abstract bool IsValid();
+
         public abstract IAsyncEnumerable<InternalBankDataRecord> GetBankData(CancellationToken token = default);
     }
 }

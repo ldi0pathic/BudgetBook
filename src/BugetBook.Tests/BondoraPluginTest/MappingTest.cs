@@ -2,7 +2,6 @@ using BondoraPlugin;
 using System.Data;
 using Xunit.Abstractions;
 
-
 namespace BondoraPluginTest
 {
     public class MappingTest
@@ -21,8 +20,7 @@ namespace BondoraPluginTest
         {
             var plugin = new BondoraBankDataImport();
 
-            Assert.True(plugin.SetAndCheckPath(path));
-            Assert.True(plugin.IsValid());
+            Assert.True(plugin.SetAndCheck(path));
 
             var data = plugin.GetBankData().ToBlockingEnumerable().ToList();
 
@@ -31,7 +29,6 @@ namespace BondoraPluginTest
             Assert.Equal(1, data.Count(s => s.Type.Equals(BankDataImportBase.DataType.SavingPlan)));
             Assert.Equal(15, data.Count(s => s.Type.Equals(BankDataImportBase.DataType.Interest)));
             Assert.Equal((decimal)117.85, data.Sum(s => s.Amount));
-
 
             var plan = data.Where(w => w.Type.Equals(BankDataImportBase.DataType.SavingPlan)).Single();
 

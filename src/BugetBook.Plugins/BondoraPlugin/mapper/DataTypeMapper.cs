@@ -10,6 +10,8 @@ namespace BondoraPlugin.mapper
             { DataType.SavingPlan,  new List<string>{ "Überweisen", "SEPA-Banküberweisung" } },
         };
 
+        public static DataType ToDataType(this object obj) => ToDataType(obj.ToString());
+
         public static DataType ToDataType(this string typeString)
         {
             return AdditionalNames.First(pair => pair.Value.Any(name => name.Equals(typeString, StringComparison.OrdinalIgnoreCase))).Key;
