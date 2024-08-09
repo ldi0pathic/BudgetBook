@@ -54,5 +54,16 @@ namespace BondoraPluginTest
             Assert.Equal("Go & Grow Zinsen", data2.Description);
             Assert.Equal((decimal)1.29, data2.Amount);
         }
+
+        [Fact]
+        public void test()
+        {
+            var s = "Hallo";
+
+            foreach (char item in s)
+            {
+                Console.WriteLine(item);
+            }
+        }
     }
 }
